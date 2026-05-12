@@ -3,14 +3,6 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#2457c5" />
-  <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-title" content="Repaso DAM" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <link rel="manifest" href="./manifest.webmanifest" />
-  <link rel="icon" href="./icons/icon.svg" type="image/svg+xml" />
-  <link rel="apple-touch-icon" href="./icons/icon-192.png" />
   <title>Repaso tipo test DAM</title>
   <style>
     :root {
@@ -33,7 +25,6 @@
     }
 
     * { box-sizing: border-box; }
-    [hidden] { display: none !important; }
 
     body {
       margin: 0;
@@ -451,7 +442,6 @@
 
         <div class="side-actions">
           <button class="btn" id="startBlockBtn">Nuevo bloque aleatorio</button>
-          <button class="btn secondary" id="installAppBtn" hidden>Instalar app</button>
           <button class="btn danger" id="clearAllBtn">Borrar todo el progreso</button>
         </div>
 
@@ -493,7 +483,6 @@
     let currentSubject = SUBJECT_ORDER.includes(state.currentSubject) ? state.currentSubject : null;
     let answeredCurrent = false;
     let currentQuestion = null;
-    let deferredInstallPrompt = null;
 
     const $ = (selector) => document.querySelector(selector);
     const $$ = (selector) => Array.from(document.querySelectorAll(selector));
@@ -867,10 +856,6 @@
     }
 
     initControlsFromState();
-    setupInstallButton();
-    registerServiceWorker();
-    requestPersistentStorage();
-
     $('#startBlockBtn').addEventListener('click', () => startNewBlock(currentSubject));
     $('#useAllBtn').addEventListener('click', () => {
       if (!currentSubject) return;
@@ -899,51 +884,6 @@
     });
 
     render();
-
-    function setupInstallButton() {
-      const button = $('#installAppBtn');
-      if (!button) return;
-
-      button.addEventListener('click', async () => {
-        if (!deferredInstallPrompt) return;
-        deferredInstallPrompt.prompt();
-        await deferredInstallPrompt.userChoice.catch(() => null);
-        deferredInstallPrompt = null;
-        updateInstallButton();
-      });
-
-      window.addEventListener('beforeinstallprompt', (event) => {
-        event.preventDefault();
-        deferredInstallPrompt = event;
-        updateInstallButton();
-      });
-
-      window.addEventListener('appinstalled', () => {
-        deferredInstallPrompt = null;
-        updateInstallButton();
-      });
-
-      updateInstallButton();
-    }
-
-    function updateInstallButton() {
-      const button = $('#installAppBtn');
-      if (!button) return;
-      const standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-      button.hidden = standalone || !deferredInstallPrompt;
-    }
-
-    function registerServiceWorker() {
-      if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./service-worker.js').catch(() => {});
-      });
-    }
-
-    function requestPersistentStorage() {
-      if (!navigator.storage?.persist) return;
-      navigator.storage.persist().catch(() => {});
-    }
   </script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'repaso-dam-v1';
+const CACHE_NAME = 'repaso-dam-v2';
 const APP_SHELL = [
   './',
   './index.html',
